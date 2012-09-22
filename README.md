@@ -3,6 +3,8 @@ Apache Log Stats
 
 Parses apache logs and calculates requests per second for apache.
 
+An example with a wildcard
+
 ```bash
 andrew@andrew-OptiPlex-7010:/var/www/logs$ perl apache-log-stat.pl $(ls b2f*_ApacheAccess.2011-12-05.gz);
 b2f01_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 5.9244410066893	sqsum_requests: 4260577	variance_requests_per_second: 25.929417534131	total_requests: 0	stddev_requests_per_second: 5.09209362974906	max_requests_per_second: 57	
@@ -36,9 +38,20 @@ b2f28_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 7.65541471667735	sqs
 b2f29_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 7.8343949044586	sqsum_requests: 6606078	variance_requests_per_second: 28.1476393241968	total_requests: 0	stddev_requests_per_second: 5.30543488549212	max_requests_per_second: 47	
 b2f30_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 7.74477986403367	sqsum_requests: 6494277	variance_requests_per_second: 27.6178911703812	total_requests: 0	stddev_requests_per_second: 5.25527270180922	max_requests_per_second: 39	
 Total:	avg_requests_per_second: 178.195623551948	sqsum_requests: 123819671	variance_requests_per_second: 581.999651005239	stddev_requests_per_second: 125.996277083509	max_requests_per_second: 1075	
+```
 
+An example file individual files list
+
+```bash
+andrew@andrew-OptiPlex-7010:/var/www/logs$ perl apache-log-stat.pl b2f01_ApacheAccess.2011-12-05.gz b2f02_ApacheAccess.2011-12-05.gz;
+b2f01_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 5.9244410066893	sqsum_requests: 4260577	variance_requests_per_second: 25.929417534131	total_requests: 0	stddev_requests_per_second: 5.09209362974906	max_requests_per_second: 57	
+b2f02_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 6.04974944240072	sqsum_requests: 4360521	variance_requests_per_second: 26.5543856366097	total_requests: 0	stddev_requests_per_second: 5.15309476301472	max_requests_per_second: 45	
+```
+
+Examples piping from either cat or zcat
+
+```bash
 andrew@andrew-OptiPlex-7010:/var/www/logs$ cat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat.pl;
 
 andrew@andrew-OptiPlex-7010:/var/www/logs$ zcat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat.pl;
-
 ```
