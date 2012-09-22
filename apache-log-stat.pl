@@ -116,19 +116,19 @@ sub run {
 
   print "Total:\t";
 
-    foreach my $file (keys $self->{files}) {
-      foreach my $item (keys $self->{files}{$file}) {
-        next if ($item eq 'max_requests' || !defined($self->{files}{$file}{$item}));
-        $self->{total}{$item} =0 if (!defined($self->{total}{$item}));
-        $self->{total}{$item} += $self->{files}{$file}{$item};
-      }
+  foreach my $file (keys $self->{files}) {
+    foreach my $item (keys $self->{files}{$file}) {
+      next if ($item eq 'max_requests' || !defined($self->{files}{$file}{$item}));
+      $self->{total}{$item} =0 if (!defined($self->{total}{$item}));
+      $self->{total}{$item} += $self->{files}{$file}{$item};
     }
+  }
 
-    foreach my $s (keys $self->{total}) {
-      next if ($s eq 'max_requests');
-      printf "%s: %s\t", $s, defined($self->{total}{$s})? $self->{total}{$s} : 0;
-    }
-    print "\n";
+  foreach my $s (keys $self->{total}) {
+    next if ($s eq 'max_requests');
+    printf "%s: %s\t", $s, defined($self->{total}{$s})? $self->{total}{$s} : 0;
+  }
+  print "\n";
 
 
 }
