@@ -1,0 +1,15 @@
+Source: apache-log-stats
+Section: utils
+Priority: optional
+Maintainer: Andrew Johnstone <andrew@ajohnstone.com>
+Build-Depends: debhelper (>= 4.2)
+Build-Depends-Indep: perl (>= 5.6.0-16)
+Standards-Version: 3.7.2
+Homepage: https://github.com/ajohnstone/apache-log-stats
+Vcs-Browser: https://github.com/ajohnstone/apache-log-stats
+Vcs-Git: git@github.com:ajohnstone/apache-log-stats.git
+
+Package: apache-log-stats
+Architecture: all
+Depends: ${perl:Depends}
+Description: Apache log stats - extract requests per second from logs.

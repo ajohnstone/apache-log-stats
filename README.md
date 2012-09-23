@@ -6,7 +6,7 @@ Parses apache logs and calculates requests per second for apache.
 An example with a wildcard
 
 ```bash
-andrew@andrew-OptiPlex-7010:/var/www/logs$ perl apache-log-stat.pl $(ls b2f*_ApacheAccess.2011-12-05.gz);
+andrew@andrew-OptiPlex-7010:/var/www/logs$ perl apache-log-stat $(ls b2f*_ApacheAccess.2011-12-05.gz);
 b2f01_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 5.9244410066893	sqsum_requests: 4260577	variance_requests_per_second: 25.929417534131	total_requests: 413603	stddev_requests_per_second: 5.09209362974906	max_requests_per_second: 57	
 b2f02_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 6.04974944240072	sqsum_requests: 4360521	variance_requests_per_second: 26.5543856366097	total_requests: 417711	stddev_requests_per_second: 5.15309476301472	max_requests_per_second: 45	
 b2f03_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 6.09480940676857	sqsum_requests: 4386161	variance_requests_per_second: 26.643653012366	total_requests: 419073	stddev_requests_per_second: 5.16174902647988	max_requests_per_second: 48	
@@ -43,7 +43,7 @@ Total:	avg_requests_per_second: 178.195623551948	sqsum_requests: 123819671	total
 An example file individual files list
 
 ```bash
-andrew@andrew-OptiPlex-7010:/var/www/logs$ perl apache-log-stat.pl b2f01_ApacheAccess.2011-12-05.gz b2f02_ApacheAccess.2011-12-05.gz;
+andrew@andrew-OptiPlex-7010:/var/www/logs$ perl apache-log-stat b2f01_ApacheAccess.2011-12-05.gz b2f02_ApacheAccess.2011-12-05.gz;
 b2f01_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 5.9244410066893	sqsum_requests: 4260577	variance_requests_per_second: 25.929417534131	total_requests: 413603	stddev_requests_per_second: 5.09209362974906	max_requests_per_second: 57	
 b2f02_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 6.04974944240072	sqsum_requests: 4360521	variance_requests_per_second: 26.5543856366097	total_requests: 417711	stddev_requests_per_second: 5.15309476301472	max_requests_per_second: 45	
 Total:	avg_requests_per_second: 11.97419044909	sqsum_requests: 8621098	total_requests: 831314	variance_requests_per_second: 52.4838031707407	stddev_requests_per_second: 10.2451883927638	max_requests_per_second: 102
@@ -52,7 +52,7 @@ Total:	avg_requests_per_second: 11.97419044909	sqsum_requests: 8621098	total_req
 Examples piping from either cat or zcat
 
 ```bash
-andrew@andrew-OptiPlex-7010:/var/www/logs$ cat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat.pl;
+andrew@andrew-OptiPlex-7010:/var/www/logs$ cat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat;
 
-andrew@andrew-OptiPlex-7010:/var/www/logs$ zcat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat.pl;
+andrew@andrew-OptiPlex-7010:/var/www/logs$ zcat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat;
 ```
