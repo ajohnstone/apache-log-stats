@@ -4,6 +4,8 @@ use strict;
 use warnings FATAL => 'all';
 use constant DEBUG => $ENV{DEBUG} || 0;
 
+our $VERSION = '0.1';
+
 package Apache::Log::Stats;
 
 use strict;
@@ -17,6 +19,8 @@ use Data::Dumper;
 use POSIX 'isatty';
 use Compress::Zlib ;
 use IO::Zlib;
+
+use Pod::Usage;
 
 sub new {
   my ( $class, %args ) = @_;
@@ -42,6 +46,20 @@ sub run {
   # use stdin if no files supplied
   @ARGV = '-' unless @ARGV ;
 
+  my ($man, $help, $version) = (0, 0, 0);
+
+  GetOptions(
+    'help|?' => \$help,
+    'man' => \$man,
+    'version' => sub {
+      print "$0 - $VERSION\n";
+      exit;
+    }
+  ) or pod2usage(2);
+  pod2usage(1) if $help;
+  pod2usage(-verbose => 2) if $man;
+
+  pod2usage("$0: No files given.")  if ((@ARGV == 0) && (-t STDIN));
 
   foreach my $file (@ARGV) {
 
