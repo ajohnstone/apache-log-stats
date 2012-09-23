@@ -9,6 +9,8 @@ package Apache::Log::Stats;
 use strict;
 use warnings FATAL => 'all';
 
+use constant DEBUG => $ENV{DEBUG} || 0;
+
 use Getopt::Long;
 use Time::HiRes 'time';
 use Data::Dumper;
@@ -20,7 +22,7 @@ sub new {
   my ( $class, %args ) = @_;
 
   my $self = {
-    debug => 0,
+    debug => DEBUG,
     data => {},
     stats => {
       total_requests => 0,
@@ -69,7 +71,7 @@ sub run {
            $self->{stats}{max_requests} = $date;
         }
           
-        if ($i % 1000 == 0) {
+        if ($i % 10000 == 0) {
           my $diff = time - $start;
           STDOUT->printflush("$cnt in $diff\n") if ($self->{debug});
           $i=0;
