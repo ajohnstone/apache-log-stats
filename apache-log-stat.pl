@@ -1,5 +1,9 @@
 #!/usr/bin/env perl
 
+use strict;
+use warnings FATAL => 'all';
+use constant DEBUG => $ENV{DEBUG} || 0;
+
 package Apache::Log::Stats;
 
 use strict;
@@ -90,7 +94,6 @@ sub run {
       my $var = ($num != 0)? ($self->{stats}{sqsum_requests} / $num - $avg * $avg) : 0;
       my $std = sqrt($var);
 
-      $self->{stats}{total_requests} = $self->{stats}{total};
       $self->{stats}{avg_requests_per_second} = $avg;
       $self->{stats}{variance_requests_per_second} = $var;
       $self->{stats}{stddev_requests_per_second} = $std;
@@ -146,3 +149,72 @@ sub main {
 if ( !caller ) { exit main(@ARGV); }
 
 1;
+
+
+# ############################################################################
+# Documentation
+# ############################################################################
+=pod
+
+=head1 NAME
+
+apache-log-stats - Extract statistics from apache log files, such as apache requests per second.
+
+=head1 SYNOPSIS
+
+Usage: apache-log-stats [OPTION...] files
+
+=over 8
+
+=item apache-log-stat.pl $(ls b2f*_ApacheAccess.2011-12-05.gz);
+
+=item apache-log-stat.pl b2f01_ApacheAccess.2011-12-05.gz b2f02_ApacheAccess.2011-12-05.gz;
+
+=item cat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat.pl;
+
+=item zcat b2f01_ApacheAccess.2011-12-05.gz | perl apache-log-stat.pl;
+
+=back
+
+=head1 DESCRIPTION
+
+apache-log-stats - analyses apache log files and produces various statistics.
+
+=head1 SYSTEM REQUIREMENTS
+
+You need Perl and some core packages that ought to be
+installed in any reasonably new version of Perl.
+
+=head1 DOWNLOADING
+
+Visit L<https://github.com/ajohnstone/apache-log-stats> to download the
+latest release of apache-log-stats.
+
+=head1 AUTHORS
+
+Andrew Johnstone <andrew@ajohnstone.com>
+
+=head1 COPYRIGHT, LICENSE, AND WARRANTY
+
+This program is copyright 2012-2013 Andrew Johnstone.
+Feedback and improvements are welcome.
+
+THIS PROGRAM IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, version 2; OR the Perl Artistic License.  On UNIX and similar
+systems, you can issue `man perlgpl' or `man perlartistic' to read these
+licenses.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA  02111-1307  USA.
+
+=head1 VERSION
+
+apache-log-stats 0.1
+
+=cut
