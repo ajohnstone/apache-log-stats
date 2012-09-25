@@ -163,17 +163,35 @@ sub run {
   }
   print "\n";
 
-  print "\n\nRequests per hour\n".("=" x 20)."\n\n";
+  my $max = 0;
+  $max+= $self->{historical}{$_} foreach(keys $self->{historical});
+  my %graphs = (
+    requests_per_hour => {
+      order => 1,
+      title => "Requests per hour",
+      max => $max,
+    },
+    distribution_by_server => {
+      order => 2,
+      title => "Comparison by distribution over an hour",
+      max => $self->{historical}{ (sort { $self->{historical}{$a} <=> $self->{historical}{$b} } keys $self->{historical})[-1] },
+    },
+  );
 
-  my $max = $self->{historical}{ (sort { $self->{historical}{$a} <=> $self->{historical}{$b} } keys $self->{historical})[-1] };
-  my $max_length = length($max);
-  foreach my $s (sort { $a <=> $b } keys $self->{historical}) {
-    my $v = $self->{historical}{$s};
-    my $percent = (($v / $max) * 100);
-    printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%.2f%%)\trqs: %d\trqm: %d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $max, $percent, $v/3600, $v/60);
+  foreach my $chart_key (sort { $graphs{$a} <=> $graphs{$b} } keys %graphs) {
+    my $chart = $graphs{$chart_key};
+    my $max_length = length($chart->{max});
+
+    print "\n\n$chart->{title}\n".("=" x 20)."\n\n";
+
+    foreach my $s (sort { $a <=> $b } keys $self->{historical}) {
+      my $v = $self->{historical}{$s};
+      my $percent = (($v / $chart->{max}) * 100);
+      printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%.2f%%)\trqs: %d\trqm: %d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $chart->{max}, $percent, $v/3600, $v/60);
+    }
+
   }
-  print "\n";
-
+  print "\n\n";
 
 }
 1;
