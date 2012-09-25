@@ -166,10 +166,11 @@ sub run {
   print "\n\nRequests per hour\n".("=" x 20)."\n\n";
 
   my $max = $self->{historical}{ (sort { $self->{historical}{$a} <=> $self->{historical}{$b} } keys $self->{historical})[-1] };
+  my $max_length = length($max);
   foreach my $s (sort { $a <=> $b } keys $self->{historical}) {
     my $v = $self->{historical}{$s};
     my $percent = (($v / $max) * 100);
-    printf("% 5s %s %s\t%s / %s (%.2f%%)\trqs: %d\trqm: %d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $max, $percent, $v/3600, $v/60);
+    printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%.2f%%)\trqs: %d\trqm: %d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $max, $percent, $v/3600, $v/60);
   }
   print "\n";
 
