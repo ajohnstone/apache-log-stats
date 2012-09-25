@@ -130,8 +130,20 @@ sub run {
       $self->{stats}{max_requests_per_second} = (defined($self->{stats}{max_requests}) && defined($self->{data}{ $self->{stats}{max_requests} }{cnt})? $self->{data}{ $self->{stats}{max_requests} }{cnt} : 0);
 
       foreach my $s (keys $self->{stats}) {
-        next if ($s eq 'max_requests');
-        printf "%s: %s\t", $s, defined($self->{stats}{$s})? $self->{stats}{$s} : 0;
+        next if (grep(/$s/, qw(max_requests sqsum_requests)));
+
+        printf "%s: ", $s;
+
+        if (!defined($self->{stats}{$s})) {
+          print '-';
+        } elsif($self->{stats}{$s} =~ m/^\d+$/) {
+          printf "% 4d", $self->{stats}{$s};
+        } elsif($self->{stats}{$s} =~ m/^\d+.\d+$/) {
+          printf '%.2f', $self->{stats}{$s};
+        } else {
+          print $s;
+        }
+        print "\t";
       }
       print "\n";
 
@@ -158,10 +170,24 @@ sub run {
   }
 
   foreach my $s (keys $self->{total}) {
-    next if ($s eq 'max_requests');
-    printf "%s: %s\t", $s, defined($self->{total}{$s})? $self->{total}{$s} : 0;
+    next if (grep(/$s/, qw(max_requests sqsum_requests)));
+
+    printf "%s: ", $s;
+
+    if (!defined($self->{total}{$s})) {
+      print '-';
+    } elsif($self->{total}{$s} =~ m/^\d+$/) {
+      printf "% 4d", $self->{total}{$s};
+    } elsif($self->{total}{$s} =~ m/^\d+.\d+$/) {
+      printf '%.2f', $self->{total}{$s};
+    } else {
+      print $s;
+    }
+    print "\t";
   }
   print "\n";
+
+  # Charts
 
   my $max = 0;
   $max+= $self->{historical}{$_} foreach(keys $self->{historical});
@@ -187,7 +213,7 @@ sub run {
     foreach my $s (sort { $a <=> $b } keys $self->{historical}) {
       my $v = $self->{historical}{$s};
       my $percent = (($v / $chart->{max}) * 100);
-      printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %d\trqm: %d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $chart->{max}, $percent, $chart->{max} - $v, $v/3600, $v/60);
+      printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %3.d\trqm: %3.d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $chart->{max}, $percent, $chart->{max} - $v, $v/3600, $v/60);
     }
 
   }
