@@ -201,7 +201,7 @@ sub run {
     },
     distribution_by_server => {
       order => 2,
-      title => "Comparison by distribution over an hour",
+      title => "Comparison by distribution of requests per server over an hour",
       max => $self->{historical_server_hour}{ (sort { $self->{historical_server_hour}{$a} <=> $self->{historical_server_hour}{$b} } keys $self->{historical_server_hour})[-1] },
       key => 'historical_server_hour',
     },
