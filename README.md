@@ -7,7 +7,6 @@ An example with a wildcard
 
 ```bash
 andrew@andrew-OptiPlex-7010:/var/www/logs/bin$ ./apache-log-stat $(ls ../logs/b2f*_ApacheAccess.2011-12-05.gz)
-andrew@andrew-OptiPlex-7010:/var/www/logs/bin$ ./apache-log-stat $(ls ../logs/b2f*_ApacheAccess.2011-12-05.gz)
 Processing
 ====================
 
@@ -43,8 +42,7 @@ Processing
 ../logs/b2f30_ApacheAccess.2011-12-05.gz - avg_requests_per_second: 7.74	variance_requests_per_second: 27.62	total_requests:  574167	stddev_requests_per_second: 5.26	max_requests_per_second:   39	
 Total:	avg_requests_per_second: 178.20	total_requests:  12507851	variance_requests_per_second: 582.00	stddev_requests_per_second: 126.00	max_requests_per_second:  1075	
 
-
-Comparison by distribution over an hour
+Comparison by distribution of requests per server over an hour
 ====================
 
    00 ../logs/b2f01_ApacheAccess.2011-12-05.gz ##################################################################################                    	7846 / 9559 ( 82.08% )	var: 1713	rqs:   2	rqm: 130
