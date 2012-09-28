@@ -98,7 +98,8 @@ sub run {
            $self->{stats}{max_requests} = $date;
         }
 
-        $self->{historical}{"$hour"}++;
+        $self->{historical_hour}{"$hour"}++;
+        $self->{historical_server_hour}{"$hour"}{$file}++;
 
         if ($i % 10000 == 0) {
           my $diff = time - $start;
@@ -190,32 +191,50 @@ sub run {
   # Charts
 
   my $max = 0;
-  $max+= $self->{historical}{$_} foreach(keys $self->{historical});
+  $max+= $self->{historical_hour}{$_} foreach(keys $self->{historical_hour});
   my %graphs = (
     requests_per_hour => {
       order => 1,
       title => "Requests per hour",
       max => $max,
+      key => 'historical_hour',
     },
     distribution_by_server => {
       order => 2,
       title => "Comparison by distribution over an hour",
-      max => $self->{historical}{ (sort { $self->{historical}{$a} <=> $self->{historical}{$b} } keys $self->{historical})[-1] },
+      max => $self->{historical_server_hour}{ (sort { $self->{historical_server_hour}{$a} <=> $self->{historical_server_hour}{$b} } keys $self->{historical_server_hour})[-1] },
+      key => 'historical_server_hour',
     },
   );
 
   foreach my $chart_key (sort { $graphs{$a} <=> $graphs{$b} } keys %graphs) {
+    my $key = $graphs{$chart_key}{key};
     my $chart = $graphs{$chart_key};
     my $max_length = length($chart->{max});
-
     print "\n\n$chart->{title}\n".("=" x 20)."\n\n";
 
-    foreach my $s (sort { $a <=> $b } keys $self->{historical}) {
-      my $v = $self->{historical}{$s};
-      my $percent = (($v / $chart->{max}) * 100);
-      printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %3.d\trqm: %3.d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $chart->{max}, $percent, $chart->{max} - $v, $v/3600, $v/60);
-    }
+    # Refactor  
+    if ($key eq 'historical_hour') {
 
+      foreach my $s (sort { $a <=> $b } keys $self->{historical_hour}) {
+        my $v = $self->{ $graphs{$chart_key}{key} }{$s};
+        my $percent = (($v / $chart->{max}) * 100);
+        printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %3.d\trqm: %3.d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $chart->{max}, $percent, $chart->{max} - $v, $v/3600, $v/60);
+      }
+  
+    } elsif ($key eq 'historical_server_hour') {
+
+     foreach my $hour (sort { $a <=> $b } keys $self->{historical_server_hour}) {
+         my $max = $self->{historical_server_hour}{$hour}{ (sort { $self->{historical_server_hour}{$hour}{$a} <=> $self->{historical_server_hour}{$hour}{$b} } keys $self->{historical_server_hour}{$hour})[-1] };
+         my $max_length = length($max);
+         foreach my $s (sort keys $self->{historical_server_hour}{$hour}) {
+          my $v = $self->{historical_server_hour}{$hour}{$s};
+          my $percent = (($v / $max) * 100);
+          printf("% 5s %s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %3.d\trqm: %3.d\n", $hour, $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $max, $percent, $max - $v, $v/3600, $v/60);
+        }
+      }
+      print "\n";
+    }
   }
   print "\n\n";
 
