@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+
+# This script builds tar, rpm, and deb packages for a new release.  The
+# packages are created in the release/ directory (which is created if it
+# does not exist).
+#
+# There's only one command line option: VERISON.  It must be newer than
+# the last version in the Changelog; see check_version().  Do not include
+# a leading 'v', just `build-packages 1.0.8' for example.
+#
+# These environment variables control what the script does:
+#   CHECK=0|1       - Do (not) check the branch, version, etc.
+#   UPDATE=0|1      - Do (not) update changelogs, versions, etc.
+#   BUILD=0|1       - Do (not) build any packages
+#   BUILD_TAR=0|1   - Do (not) build the .tar.gz package
+#   BUILD_RPM=0|1   - Do (not) build the .rpm package
+#   BUILD_DEB=0|1   - Do (not) build the .deb package
+
+set -ue # bail out on errors, be strict
+
+TOOL_NAME="apache-log-stats";
+
+exit_status=0
+
+die() {
+   echo "$1" >&2
+   exit 1
+}
+
+warn() {
+   echo "$1" >&2
+   exit_status=1
+}
+
+TAR=${TAR:-tar}
+
+update_manifest() {
+   echo -n "Updating MANIFEST... "
+   cd $BRANCH
+   echo -n > MANIFEST
+   for file in * bin/* docs/*.pod; do
+      if [ -f $file ]; then
+         echo $file >> MANIFEST
+      fi
+   done
+   echo "OK"
+}
+
+build_tar() {
+   echo -n "Building $PKG.tar.gz... "
+   cd $RELEASE_DIR
+   $TAR czf "$PKG.tar.gz" $PKG
+   echo "OK"
+}
+
+prep_release_dir() {
+   echo -n "Preparing release directory... "
+   cd $BRANCH
+   if [ ! -d $RELEASE_DIR ]; then
+      mkdir $RELEASE_DIR
+   elif [ -d $RELEASE_DIR/$PKG ]; then
+      rm -rf $RELEASE_DIR/$PKG
+   fi
+   (
+      cd $RELEASE_DIR
+      mkdir -p $PKG $PKG/bin $PKG/docs $PKG/lib
+   )
+   for file in `cat MANIFEST`; do
+      cp $file $RELEASE_DIR/$PKG/$file
+   done
+   echo "OK"
+}
+
+build_deb() {
+   local deb_pkg="${TOOL_NAME}_${VERSION}-1_all.deb"
+   echo -n "Building $deb_pkg... "
+
+   cd $RELEASE_DIR
+   if [ ! -f "$PKG.tar.gz" ]; then
+      die "Cannot build RPM because $PKG.tar.gz does not exist"
+   fi
+
+   # Copy debian pkg files.
+   if [ ! -d "$RELEASE_DIR/$PKG/debian" ]; then
+      mkdir $RELEASE_DIR/$PKG/debian
+   else
+      rm -rf * $RELEASE_DIR/$PKG/debian
+   fi
+   cp $BRANCH/config/deb/* $RELEASE_DIR/$PKG/debian/
+
+   # Build Debian "binary" package.
+   cd $RELEASE_DIR/$PKG
+   dpkg-buildpackage -b -us -uc >$tmpdir/dpkg-buildpackage 2>&1
+   if [ $? -ne 0 ]; then
+      warn "dpkg-buildpackage has warnings; see $tmpdir/dpkg-buildpackage"
+   fi
+
+   rm -rf debian/ build-stamp >/dev/null
+   make distclean >/dev/null
+   cd $RELEASE_DIR
+   rm -rf *.changes >/dev/null
+
+   echo "OK"
+}
+
+build_rpm() {
+   echo -n "Building $PKG-1.noarch.rpm... "
+   cd $RELEASE_DIR
+   if [ ! -f "$PKG.tar.gz" ]; then
+      die "Cannot build RPM because $PKG.tar.gz does not exist"
+   fi
+
+   mkdir -p rpm rpm/BUILD rpm/SOURCES rpm/RPMS rpm/SRPMS
+   cd rpm
+   local topdir=`pwd`
+
+   # Build RPM package from the tarball.
+   rpmbuild -bb --clean $RPM_CONFIG_DIR/${TOOL_NAME}.spec \
+      --quiet                            \
+      --define "_topdir $PWD"            \
+      --define "_sourcedir $RELEASE_DIR" \
+      --define "version $VERSION"        \
+      --define "release 1" > $tmpdir/rpmbuild 2>&1
+   if [ $? -ne 0 ]; then
+      warn "rpmbuild has warnings; see $tmpdir/rpmbuild"
+   fi
+
+   if [ ! -f "RPMS/noarch/$PKG-1.noarch.rpm" ]; then
+      die "RPMS/noarch/$PKG-1.noarch.rpm did not build"
+   fi
+   mv "RPMS/noarch/$PKG-1.noarch.rpm" $RELEASE_DIR
+   rm -rf $RELEASE_DIR/rpm
+
+   echo "OK"
+}
+
+update_manifest() {
+   echo -n "Updating MANIFEST... "
+   cd $BRANCH
+   echo -n > MANIFEST
+   for file in * bin/* docs/*.pod; do
+      if [ -f $file ]; then
+         echo $file >> MANIFEST
+      fi
+   done
+   echo "OK"
+}
+
+BRANCH=`pwd`
+RELEASE_DIR=$BRANCH/release
+VERSION=${1:-'0.1'}
+PKG="${TOOL_NAME}-${VERSION}" # what we're building
+
+DEB_CONFIG_DIR=$BRANCH/config/deb
+RPM_CONFIG_DIR=$BRANCH/config/rpm
+
+# mktemp -d doesn't work on Mac OS X, so we'll do it the old-fashioned way.
+tmpdir="/tmp/build-${TOOL_NAME}-${VERSION}"
+rm -rf $tmpdir >/dev/null 2>&1
+mkdir $tmpdir
+
+update_manifest;
+
+BUILD=${BUILD:-1}
+if [ $BUILD -eq 1 ]; then
+
+   prep_release_dir
+
+   BUILD_TAR=${BUILD_TAR:-1}
+   if [ $BUILD_TAR -eq 1 ]; then
+      build_tar
+   fi
+
+   BUILD_RPM=${BUILD_RPM:-1}
+   if [ $BUILD_RPM -eq 1 ]; then
+      build_rpm
+   fi
+   
+   BUILD_DEB=${BUILD_DEB:-1}
+   if [ $BUILD_DEB -eq 1 ]; then
+      build_deb
+   fi
+
+   echo "Done building $PKG.  Packages are in $RELEASE_DIR"
+
+fi
+
+exit $exit_status

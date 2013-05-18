@@ -3,6 +3,25 @@ Apache Log Stats
 
 Parses apache logs and calculates requests per second for apache.
 
+Install
+-------------------------
+
+```bash
+   perl Makefile.PL
+   make
+   make test
+   make install
+```
+
+## Build packages
+
+```bash
+
+```
+
+Example usage
+-------------------------
+
 An example with a wildcard
 
 ```bash
