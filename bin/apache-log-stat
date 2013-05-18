@@ -1,15 +1,15 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings FATAL => 'all';
+#use strict;
+#use warnings FATAL => 'all';
 use constant DEBUG => $ENV{DEBUG} || 0;
 
 our $VERSION = '0.1';
 
 package Apache::Log::Stats;
 
-use strict;
-use warnings FATAL => 'all';
+#use strict;
+#use warnings FATAL => 'all';
 
 use constant DEBUG => $ENV{DEBUG} || 0;
 
@@ -113,14 +113,16 @@ sub run {
       };
       $fh->close;
 
-      foreach my $item(keys $self->{data}) {
-        $self->{stats}{sqsum_requests}+= $self->{data}{$item}{cnt} * $self->{data}{$item}{cnt};
+      if (defined($self->{data})) {
+        foreach my $item(keys %{$self->{data}}) {
+          $self->{stats}{sqsum_requests}+= $self->{data}{$item}{cnt} * $self->{data}{$item}{cnt};
         #  printf "%s -> %s\n", $item, $self->{data}{$item}{cnt};
+        }
       }
 
       #print Dumper(\%stats);
 
-      my $num = scalar keys $self->{data};
+      my $num = scalar keys %{$self->{data}};
       my $avg = ($num != 0)? ($self->{stats}{total_requests} / $num) : 0;
       my $var = ($num != 0)? ($self->{stats}{sqsum_requests} / $num - $avg * $avg) : 0;
       my $std = sqrt($var);
@@ -130,7 +132,7 @@ sub run {
       $self->{stats}{stddev_requests_per_second} = $std;
       $self->{stats}{max_requests_per_second} = (defined($self->{stats}{max_requests}) && defined($self->{data}{ $self->{stats}{max_requests} }{cnt})? $self->{data}{ $self->{stats}{max_requests} }{cnt} : 0);
 
-      foreach my $s (keys $self->{stats}) {
+      foreach my $s (keys %{$self->{stats}}) {
         next if (grep(/$s/, qw(max_requests sqsum_requests)));
 
         printf "%s: ", $s;
@@ -162,15 +164,15 @@ sub run {
 
   print "Total:\t";
 
-  foreach my $file (keys $self->{files}) {
-    foreach my $item (keys $self->{files}{$file}) {
+  foreach my $file (keys %{$self->{files}}) {
+    foreach my $item (keys %{$self->{files}{$file}}) {
       next if ($item eq 'max_requests' || !defined($self->{files}{$file}{$item}));
       $self->{total}{$item} =0 if (!defined($self->{total}{$item}));
       $self->{total}{$item} += $self->{files}{$file}{$item};
     }
   }
 
-  foreach my $s (keys $self->{total}) {
+  foreach my $s (keys %{$self->{total}}) {
     next if (grep(/$s/, qw(max_requests sqsum_requests)));
 
     printf "%s: ", $s;
@@ -191,7 +193,7 @@ sub run {
   # Charts
 
   my $max = 0;
-  $max+= $self->{historical_hour}{$_} foreach(keys $self->{historical_hour});
+  $max+= $self->{historical_hour}{$_} foreach(keys %{$self->{historical_hour}});
   my %graphs = (
     requests_per_hour => {
       order => 1,
@@ -202,7 +204,7 @@ sub run {
     distribution_by_server => {
       order => 2,
       title => "Comparison by distribution of requests per server over an hour",
-      max => $self->{historical_server_hour}{ (sort { $self->{historical_server_hour}{$a} <=> $self->{historical_server_hour}{$b} } keys $self->{historical_server_hour})[-1] },
+      max => $self->{historical_server_hour}{ (sort { $self->{historical_server_hour}{$a} <=> $self->{historical_server_hour}{$b} } keys %{$self->{historical_server_hour}})[-1] },
       key => 'historical_server_hour',
     },
   );
@@ -216,7 +218,7 @@ sub run {
     # Refactor  
     if ($key eq 'historical_hour') {
 
-      foreach my $s (sort { $a <=> $b } keys $self->{historical_hour}) {
+      foreach my $s (sort { $a <=> $b } keys %{$self->{historical_hour}}) {
         my $v = $self->{ $graphs{$chart_key}{key} }{$s};
         my $percent = (($v / $chart->{max}) * 100);
         printf("% 5s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %3.d\trqm: %3.d\n", $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $chart->{max}, $percent, $chart->{max} - $v, $v/3600, $v/60);
@@ -224,10 +226,10 @@ sub run {
   
     } elsif ($key eq 'historical_server_hour') {
 
-     foreach my $hour (sort { $a <=> $b } keys $self->{historical_server_hour}) {
-         my $max = $self->{historical_server_hour}{$hour}{ (sort { $self->{historical_server_hour}{$hour}{$a} <=> $self->{historical_server_hour}{$hour}{$b} } keys $self->{historical_server_hour}{$hour})[-1] };
+     foreach my $hour (sort { $a <=> $b } keys %{$self->{historical_server_hour}}) {
+         my $max = $self->{historical_server_hour}{$hour}{ (sort { $self->{historical_server_hour}{$hour}{$a} <=> $self->{historical_server_hour}{$hour}{$b} } keys %{$self->{historical_server_hour}{$hour}})[-1] };
          my $max_length = length($max);
-         foreach my $s (sort keys $self->{historical_server_hour}{$hour}) {
+         foreach my $s (sort keys %{$self->{historical_server_hour}{$hour}}) {
           my $v = $self->{historical_server_hour}{$hour}{$s};
           my $percent = (($v / $max) * 100);
           printf("% 5s %s %s %s\t%${max_length}s / %${max_length}s (%6.2f%% )\tvar: % ${max_length}s\trqs: %3.d\trqm: %3.d\n", $hour, $s, "#" x ($percent) . "  ", " " x (100 - $percent), $v, $max, $percent, $max - $v, $v/3600, $v/60);
