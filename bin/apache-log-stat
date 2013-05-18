@@ -1,15 +1,15 @@
 #!/usr/bin/env perl
 
-#use strict;
-#use warnings FATAL => 'all';
+use strict;
+use warnings FATAL => 'all';
 use constant DEBUG => $ENV{DEBUG} || 0;
 
 our $VERSION = '0.1';
 
 package Apache::Log::Stats;
 
-#use strict;
-#use warnings FATAL => 'all';
+use strict;
+use warnings FATAL => 'all';
 
 use constant DEBUG => $ENV{DEBUG} || 0;
 
