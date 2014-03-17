@@ -116,7 +116,6 @@ print Dumper(@ARGV);
       if (defined($self->{data})) {
         foreach my $item(keys %{$self->{data}}) {
           $self->{stats}{sqsum_requests}+= $self->{data}{$item}{cnt} * $self->{data}{$item}{cnt};
-        #  printf "%s -> %s\n", $item, $self->{data}{$item}{cnt};
         }
       }
 
